@@ -23,9 +23,9 @@ public class RingBufferSync<T> implements RingBuffer<T> {
         while (isFull()) {}
         if(!isFull())
         {
-            currsize++;
             elements[tail] = elem;
             tail = increment(tail);
+            currsize++;
             return true;
         }
         return false;
@@ -37,9 +37,9 @@ public class RingBufferSync<T> implements RingBuffer<T> {
         if(!isEmpty())
         {
             T elem;
-            currsize--;
             elem = elements[head];
             head = increment(head);
+            currsize--;
             return elem;
         }
         return null;
