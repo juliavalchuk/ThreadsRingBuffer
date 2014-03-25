@@ -6,9 +6,9 @@ package com.threads.ringbuffer;
  */
 public class RingBufferSync<T> implements RingBuffer<T> {
     private final int SIZE;
-    private volatile int head;
-    private volatile int tail;
-    private volatile int currsize;
+    private  int head;
+    private  int tail;
+    private  int currsize;
     private T[] elements;
 
     public RingBufferSync(int size) {
@@ -18,28 +18,42 @@ public class RingBufferSync<T> implements RingBuffer<T> {
         // head = -1;
     }
 
-    public boolean push(T elem)
+    public synchronized boolean push(T elem)
     {
-        while (isFull()) {}
+        while (isFull()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         if(!isFull())
         {
             elements[tail] = elem;
             tail = increment(tail);
             currsize++;
+            notifyAll();
             return true;
         }
         return false;
     }
 
-    public T pop()
+    public synchronized T pop()
     {
-        while (isEmpty()) {}
+        while (isEmpty()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         if(!isEmpty())
         {
             T elem;
             elem = elements[head];
             head = increment(head);
             currsize--;
+            notifyAll();
             return elem;
         }
         return null;

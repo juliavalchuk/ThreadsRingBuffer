@@ -8,44 +8,45 @@ public class Main {
         int n = 10;
         RingBuffer<Integer> syncRingBuffer = new RingBufferSync<Integer>(n);
         RingBuffer<Integer> lockRingBuffer = new RingBufferLock<Integer>(n);
-        Thread prods = (new Thread(new Producer(syncRingBuffer)));
-        Thread conss = (new Thread(new Consumer(syncRingBuffer)));
-        prods.start();
-        conss.start();
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        tryBuffer(syncRingBuffer);
+        tryBuffer(lockRingBuffer);
+    }
+
+    public static void tryBuffer(RingBuffer buffer){
+        int n = 1, m = 15;
+        Thread[] produsers = new Thread[n];
+        Thread[] consumers = new Thread[m];
+
+        for(int i = 0; i < n; ++i){
+            produsers[i] = new Thread(new Producer(buffer));
+            produsers[i].start();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
-        try {
-            prods.join();
-            conss.join(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for(int i = 0; i < m; ++i){
+            consumers[i] = new Thread(new Consumer(buffer));
+            consumers[i].start();
         }
 
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for(int i = 0; i < n; ++i){
+            try {
+                produsers[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
-        Thread prodl = (new Thread(new Producer(lockRingBuffer)));
-        Thread consl = (new Thread(new Consumer(lockRingBuffer)));
-        prodl.start();
-        consl.start();
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            prodl.join();
-            consl.join(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for(int i = 0; i < m; ++i){
+            try {
+                consumers[i].join(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
